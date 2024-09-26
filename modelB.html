@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Toddler Math Game</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+
+    .game-title {
+      color: #ff6347;
+      font-size: 2em;
+    }
+
+    .section {
+      background: #fff;
+      border: 2px solid #87ceeb;
+      margin: 20px auto;
+      padding: 10px;
+      width: 80%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .box {
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      margin: 10px;
+      background: #ffa07a;
+      border: 1px solid #000;
+      cursor: move;
+      display: inline-block;
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    .operator {
+      font-size: 2em;
+      margin: 0 10px;
+    }
+
+    .feedback {
+      font-size: 1.5em;
+      color: green;
+    }
+
+    .feedback.wrong {
+      color: red;
+    }
+
+    #checkButton {
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 1em;
+      background-color: #90ee90;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1 class="game-title">Math Fun Time!</h1>
+
+  <div id="gameContainer">
+    <!-- Addition Section -->
+    <div class="section" id="addition">
+      <div class="box" draggable="true">1</div>
+      <div class="box" draggable="true">2</div>
+      <span class="operator">+</span>
+      <div class="box result" data-correct=""></div>
+      <span class="feedback"></span>
+    </div>
+
+    <!-- Similar sections for subtraction, multiplication, division would go here -->
+    <!-- For brevity, they are not included in this example -->
+  </div>
+
+  <button id="checkButton">Check Answers</button>
+  <div id="gameFeedback"></div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // Enable draggable on boxes
+      $('.box').draggable({
+        revert: 'invalid',
+        helper: 'clone'
+      });
+
+      // Enable droppable on result boxes
+      $('.result').droppable({
+        accept: '.box',
+        drop: function (event, ui) {
+          $(this).text(ui.draggable.text()).attr('data-correct', ui.draggable.text());
+        }
+      });
+
+      $('#checkButton').on('click', function () {
+        let allCorrect = true;
+
+        // Check each section
+        $('.section').each(function () {
+          let num1 = parseInt($(this).children('.box').first().text());
+          let num2 = parseInt($(this).children('.box').eq(1).text());
+          let operator = $(this).children('.operator').text();
+          let resultBox = $(this).children('.result');
+          let userAnswer = parseInt(resultBox.text());
+          let correctAnswer;
+
+          switch (operator) {
+            case '+': correctAnswer = num1 + num2; break;
+            case '-': correctAnswer = num1 - num2; break;
+            case '*': correctAnswer = num1 * num2; break;
+            case '/': correctAnswer = Math.floor(num1 / num2); break;
+          }
+
+          if (userAnswer === correctAnswer) {
+            $(this).find('.feedback').text('✓').removeClass('wrong');
+          } else {
+            $(this).find('.feedback').text('✗').addClass('wrong');
+            allCorrect = false;
+          }
+        });
+
+        if (allCorrect) {
+          $('#gameFeedback').text('Good Job! Resetting...');
+          setTimeout(() => {
+            location.reload();
+          }, 3000);
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>

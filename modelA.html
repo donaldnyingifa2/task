@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Toddler Math Game</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f0f8ff;
+    }
+
+    .game-title {
+      text-align: center;
+      color: #ff6347;
+    }
+
+    .section {
+      border: 2px solid #4CAF50;
+      margin: 10px;
+      padding: 15px;
+      display: inline-block;
+      width: 45%;
+      text-align: center;
+      background: #fffde7;
+    }
+
+    .number,
+    .result {
+      padding: 10px;
+      margin: 5px;
+      background: #87CEEB;
+      display: inline-block;
+      cursor: move;
+      user-select: none;
+    }
+
+    .drop-zone {
+      min-height: 50px;
+      border: 2px dashed #ccc;
+      padding: 10px;
+    }
+
+    #checkButton {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .feedback {
+      font-size: 24px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="game-title">
+    <h1>Math Fun with Numbers!</h1>
+  </div>
+
+  <div id="gameArea">
+    <!-- Sections for operations will be dynamically added here -->
+  </div>
+
+  <button id="checkButton">Check Answers</button>
+
+  <script>
+    $(function () {
+      const operations = [
+        { op: '+', name: 'Addition' },
+        { op: '-', name: 'Subtraction' },
+        { op: '*', name: 'Multiplication' },
+        { op: '/', name: 'Division' }
+      ];
+
+      // Generate game sections
+      operations.forEach(op => {
+        let section = `
+        <div class="section" data-op="${op.op}">
+            <h2>${op.name}</h2>
+            <div class="drop-zone" id="left-${op.op}"></div>
+            <span>${op.op}</span>
+            <div class="drop-zone" id="right-${op.op}"></div>
+            <span>=</span>
+            <div class="drop-zone result-zone" id="result-${op.op}"></div>
+            <span class="feedback"></span>
+        </div>`;
+        $('#gameArea').append(section);
+      });
+
+      // Function to create draggable numbers
+      function createNumber(num) {
+        return $('<div>', { class: 'number', text: num, draggable: true, 'data-value': num });
+      }
+
+      // Populate numbers
+      for (let i = 0; i <= 10; i++) {
+        $('#gameArea').append(createNumber(i));
+      }
+
+      // Drag and Drop functionality
+      $('.number').on('dragstart', function (e) {
+        e.originalEvent.dataTransfer.setData('text', $(this).data('value'));
+      });
+
+      $('.drop-zone').on('dragover', function (e) {
+        e.preventDefault();
+      }).on('drop', function (e) {
+        e.preventDefault();
+        let data = e.originalEvent.dataTransfer.getData('text');
+        if ($(this).children().length < 2 || $(this).hasClass('result-zone')) {
+          $(this).append(createNumber(data));
+        }
+      });
+
+      // Check answers
+      $('#checkButton').on('click', function () {
+        let allCorrect = true;
+        $('.section').each(function () {
+          let left = parseInt($(this).find('.drop-zone[id^="left-"] .number').first().data('value') || 0);
+          let right = parseInt($(this).find('.drop-zone[id^="right-"] .number').first().data('value') || 0);
+          let result = $(this).find('.result-zone .number').map(function () {
+            return parseInt($(this).data('value')) || 0;
+          }).get();
+          let op = $(this).data('op');
+          let correctResult;
+          switch (op) {
+            case '+': correctResult = left + right; break;
+            case '-': correctResult = left - right; break;
+            case '*': correctResult = left * right; break;
+            case '/': correctResult = Math.floor(left / right); break;
+          }
+          let isCorrect = result.includes(correctResult);
+          $(this).find('.feedback').html(isCorrect ? '✓' : '✗');
+          allCorrect = allCorrect && isCorrect;
+        });
+
+        if (allCorrect) {
+          alert('Good job!');
+          setTimeout(() => location.reload(), 3000);
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
